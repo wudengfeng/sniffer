@@ -57,7 +57,7 @@ void parse_ip(const u_char * sp)
 			parse_tcp(sp + sizeof(struct iphdr), srcip, desip);
 			break;
 		case IPPROTO_UDP:
-	//		parse_udp(sp + sizeof(struct iphdr));
+			parse_udp(sp + sizeof(struct iphdr));
 			break;
 		case IPPROTO_ICMP:
 			parse_icmp(sp + sizeof(struct iphdr), srcip, desip);

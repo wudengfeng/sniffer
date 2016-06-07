@@ -7,6 +7,7 @@
 
 #include "sniffer.h"
 #include "help.h"
+#include "filter.h"
 #include "parse/parse_ethernet.h"
 
 int i = 0;
@@ -39,14 +40,14 @@ void dump_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *sp)
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2)
-	{
-		printf("No Argument\n");
-		gethelp();
-		return 0;
-	}
+//	if(argc < 2)
+//	{
+//		printf("No Argument\n");
+//		gethelp();
+//		return 0;
+//	}
 
-	char *dev;
+	char *dev, *strfilter;
 	char errbuf[PCAP_ERRBUF_SIZE];
 	bpf_u_int32 net;
 	bpf_u_int32 mask;
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 				break;
 			case 'p':
 				printf("p : %s\n", optarg);
+				strfilter = optarg;
 				pflag ++;
 				break;
 			case 's':
@@ -96,9 +98,18 @@ int main(int argc, char *argv[])
 		gethelp();
 		return 0;
 	}
+	if(!iflag)
+	{
+		dev = pcap_lookupdev(errbuf);
+	}
+	
 	pd = pcap_create(dev, errbuf);
 	pcap_lookupnet(dev, &net, &mask, errbuf);
 	pd = pcap_open_live(dev, 1500, 1, -1, errbuf);
+	if(pflag)
+	{
+		filte(pd, strfilter, net);
+	}
 	pcap_loop(pd, -1, callback, NULL);
 	return 0;
 }

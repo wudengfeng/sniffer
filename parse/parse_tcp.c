@@ -2,17 +2,27 @@
 #include <string.h>
 #include <netinet/tcp.h>
 #include "parse_tcp.h"
+#include "parse_http.h"
 
 void parse_tcp(const u_char *sp, char *srcip, char *desip)
 {
 	struct tcphdr *tcp;
 	tcp = (struct tcphdr *)sp;
+
+	int srcport = ntohs(tcp -> source);
+	int destport = ntohs(tcp -> dest);
 	
 	printf("IP ");
 	printf("%s.", srcip);
-	printf("%u > ", ntohs(tcp -> source));
-	printf("%s.", desip);
-	printf("%u ", ntohs(tcp -> dest));
+	if(!isKnowPort(srcport))
+	{
+		printf("%u ", srcport);
+	}
+	printf("> %s.", desip);
+	if(!isKnowPort(destport))
+	{
+		printf("%u ", destport);
+	}
 
 	print_flag(tcp);
 
@@ -28,6 +38,11 @@ void parse_tcp(const u_char *sp, char *srcip, char *desip)
 	printf("win %u", ntohs(tcp -> window));
 
 	printf("\n");
+
+	if(srcport == TCP_HTTP || destport == TCP_HTTP)
+	{
+		parse_http(sp + sizeof(struct tcphdr));
+	}
 }
 
 void print_flag(struct tcphdr *tcp)
@@ -60,4 +75,57 @@ void print_flag(struct tcphdr *tcp)
 		printf(".");
 	}
 	printf("] ");
+}
+
+int isKnowPort(int port)
+{
+	int ret = 1;
+
+	switch(port)
+	{
+		case TCP_FTP:
+			printf("ftp ");
+			break;
+		case TCP_SSH:
+			printf("ssh ");
+			break;
+		case TCP_TELNET:
+			printf("telnet ");
+			break;
+		case TCP_SMTP:
+			printf("smtp ");
+			break;
+		case TCP_DNS:
+			printf("dns ");
+			break;
+		case TCP_HTTP:
+			printf("http ");
+			break;
+		case TCP_MTA:
+			printf("mta ");
+			break;
+		case TCP_POP3:
+			printf("pop3 ");
+			break;
+		case TCP_RFC:
+			printf("rfc ");
+			break;
+		case TCP_IMAP:
+			printf("imap ");
+			break;
+		case TCP_SNMP:
+			printf("snmp ");
+			break;
+		case TCP_HTTPS:
+			printf("https ");
+			break;
+		case TCP_IMAPSSL:
+			printf("imapssl ");
+			break;
+		default:
+			ret = 0;
+			break;
+	}
+
+	return ret;
 }
